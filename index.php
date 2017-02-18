@@ -7,10 +7,10 @@
 	$dbname = "artisti";
 
 	// Create connection
-	$conn = new mysqli($servername, $username, $password, $dbname);
+	$conn = mysqli_connect($servername, $username, $password, $dbname);
 	// Check connection
-	if ($conn->connect_error) {
-		die("Connection failed: " . $conn->connect_error);
+	if (!$conn) {
+		die("Connection failed: " . mysqli_connect_error());
 } 
 
 	if(isset($_POST['nazionalita']))
@@ -70,10 +70,10 @@
 		if($query=="") return;
 		$risultato = array();
 		
-		$result = $conn->query($query);
+		$result = mysqli_query($conn, $query);
 
-		if ($result->num_rows > 0) {
-			while($row = $result->fetch_assoc()) {
+		if (mysqli_num_rows($result) > 0) {
+			while($row = mysqli_fetch_assoc($result)) {
 				array_push($risultato, $row);
 			}
 		} else {
@@ -83,7 +83,7 @@
 		return $risultato;
 	}
 
-$conn->close();
+mysqli_close($conn);
 ?>
 
 <html>
