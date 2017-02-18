@@ -1,17 +1,6 @@
 <?php
 	$risultato= array();
 	$sql="";
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-	$dbname = "artisti";
-
-	// Create connection
-	$conn = mysqli_connect($servername, $username, $password, $dbname);
-	// Check connection
-	if (!$conn) {
-		die("Connection failed: " . mysqli_connect_error());
-} 
 
 	if(isset($_POST['nazionalita']))
 	{
@@ -20,7 +9,7 @@
 		FROM artisti
 		where nazionalita='" . $value . "'";
 	
-		$risultatoArray = showQuery($sql, $conn);
+		$risultatoArray = showQuery($sql);
 		
 		foreach($risultatoArray as $value)
 			array_push($risultato, $value["nome"]);
@@ -33,7 +22,7 @@
 		FROM brani b inner join artisti a on b.idartista=a.id
 		where a.nome=" . $value . "";
 	
-		$risultatoArray = showQuery($sql, $conn);
+		$risultatoArray = showQuery($sql);
 		
 		foreach($risultatoArray as $value)
 			array_push($risultato, "Titolo: " . $value["titolo"] . " Durata: " . $value["durata"]);
@@ -46,7 +35,7 @@
 		FROM brani b inner join registrazioni r on b.idregistrazione=r.id
 		where r.titolo='" . $value . "'";
 	
-		$risultatoArray = showQuery($sql, $conn);
+		$risultatoArray = showQuery($sql);
 		
 		foreach($risultatoArray as $value)
 			array_push($risultato, "Titolo: " . $value["titolo"] . " Durata: " . $value["durata"] . " Posizione: " . $value["posizione"]);
@@ -59,31 +48,41 @@
 		FROM (brani b inner join registrazioni r on b.idregistrazione=r.id) inner join artisti a on a.id=b.idartista
 		where a.nome='" . $value . "'";
 	
-		$risultatoArray = showQuery($sql, $conn);
+		$risultatoArray = showQuery($sql);
 		
 		foreach($risultatoArray as $value)
 			array_push($risultato, "Durata Totale: " . $value["somma"]);
 	}
 	
-	function showQuery($query, $conn)
+	function showQuery($query)
 	{
-		if($query=="") return;
+		$servername = "localhost";
+		$username = "root";
+		$password = "";
+		$dbname = "artisti";
 		$risultato = array();
 		
-		$result = mysqli_query($conn, $query);
-
-		if (mysqli_num_rows($result) > 0) {
-			while($row = mysqli_fetch_assoc($result)) {
+		// Create connectio
+		try {
+			$conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+			$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); 
+		
+			//query
+			if($query=="") return;
+			
+			foreach($conn->query($query) as $row) {
 				array_push($risultato, $row);
 			}
-		} else {
-			return "0 results";
 		}
+		catch(PDOException $e)
+		{
+			echo "Connection failed: " . $e->getMessage();
+		}
+
+		$conn = null;
 		
 		return $risultato;
 	}
-
-mysqli_close($conn);
 ?>
 
 <html>
